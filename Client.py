@@ -17,7 +17,7 @@ TIMEOUT = 1  # Timeout for UDP listening in seconds
 
 def listen_for_offers():
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
-        udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+        udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         udp_socket.bind(("", UDP_BROADCAST_PORT))
         print("[Client] Listening for offers...")
 

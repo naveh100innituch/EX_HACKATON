@@ -19,7 +19,7 @@ UDP_PORT = 5001
 def broadcast_offers():
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP) as udp_socket:
         udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+        udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         while True:
             offer_message = struct.pack(
                 '>IBHH', MAGIC_COOKIE, OFFER_MESSAGE_TYPE, UDP_PORT, TCP_PORT
