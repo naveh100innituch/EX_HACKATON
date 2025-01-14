@@ -9,15 +9,11 @@ import select
 class Colors:
     # Text Colors
     HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
     OKCYAN = '\033[96m'
     OKGREEN = '\033[92m'
     WARNING = '\033[93m'
     FAIL = '\033[91m'
-    RED = '\033[31m'
-    GREEN = '\033[32m'
     YELLOW = '\033[33m'
-    BLUE = '\033[34m'
     BOLD = '\033[1m'
     ENDC = '\033[0m'
 
@@ -57,7 +53,7 @@ def broadcast_offers():
     try:
         with create_udp_socket() as udp_socket:
             udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-            print(f"{Colors.GREEN}[Broadcast] UDP broadcast started at {time.strftime('%Y-%m-%d %H:%M:%S')}{Colors.ENDC}")
+            print(f"{Colors.OKGREEN}[Broadcast] UDP broadcast started at {time.strftime('%Y-%m-%d %H:%M:%S')}{Colors.ENDC}")
             offer_message = struct.pack(
                 '!IbHH', MAGIC_COOKIE, OFFER_MSG_TYPE, UDP_PORT, TCP_PORT
             )
