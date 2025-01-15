@@ -36,7 +36,7 @@ server_running = threading.Event()
 
 # Statistics
 total_tcp_connections = 0
-total_data_transferred = 0  # in bytes
+total_data_transferred = 0
 
 def create_udp_socket():
     """Create a UDP socket with cross-platform support."""
@@ -50,6 +50,7 @@ def create_udp_socket():
     return sock
 
 def broadcast_offers():
+    time.sleep(1)   # making sure TCP and UDP sockets are set before any broadcast
     try:
         with create_udp_socket() as udp_socket:
             udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
@@ -108,8 +109,8 @@ def handle_udp_connection():
                         continue
 
                     file_size = struct.unpack('!Q', data[5:13])[0]
-                    print(f"{Colors.YELLOW}[UDP] Requesting {file_size} bytes from {addr}{Colors.ENDC}")
                     total_segments = (file_size + PAYLOAD_SIZE - 1) // PAYLOAD_SIZE
+                    print(f"{Colors.YELLOW}[UDP] Requesting {file_size} bytes from {addr}{Colors.ENDC}")
                     print(f"{Colors.YELLOW}[UDP] Total segments to send: {total_segments}{Colors.ENDC}")
 
                     for segment in range(total_segments):
@@ -154,8 +155,8 @@ def start_server():
         server_running.clear()
     finally:
         print(f"{Colors.OKGREEN}[Server] Server terminated.{Colors.ENDC}")
-        print(f"{Colors.BOLD + Colors.OKCYAN}[Server] Total TCP connections: {total_tcp_connections}{Colors.ENDC}")
-        print(f"{Colors.BOLD + Colors.OKCYAN}[Server] Total data transferred: {total_data_transferred} bytes{Colors.ENDC}")
+        print(f"{Colors.BOLD + Colors.HEADER}[Server] Total TCP connections: {total_tcp_connections}{Colors.ENDC}")
+        print(f"{Colors.BOLD + Colors.HEADER}[Server] Total data transferred: {total_data_transferred} bytes{Colors.ENDC}")
 
 
 if __name__ == "__main__":

@@ -28,15 +28,8 @@ UDP_PORT = 13117
 BUFFER_SIZE = 4096
 
 # Client Settings
-TIMEOUT = 1  # Timeout for UDP listening in seconds
+TIMEOUT = 1
 
-def get_available_udp_port():
-    # Create a UDP socket
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-        # Bind to port 0 to let the OS assign a free port
-        sock.bind(('', 0))
-        # Get the assigned port number
-        return sock.getsockname()[1]
 
 def listen_for_offers():
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
@@ -61,7 +54,7 @@ def listen_for_offers():
                 print(f"{Colors.FAIL+Colors.BOLD}[Client] Error while listening for offers: {e}{Colors.ENDC}")
 
 # Handle TCP Connection
-def handle_tcp_connection(server_ip, tcp_port, file_size, tr_num,stats):
+def handle_tcp_connection(server_ip, tcp_port, file_size, tr_num):
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp_socket:
             tcp_socket.connect((server_ip, tcp_port))
@@ -71,7 +64,7 @@ def handle_tcp_connection(server_ip, tcp_port, file_size, tr_num,stats):
             received_data = 0
 
             while True:
-                ready_socks, _, _ = select.select([tcp_socket], [], [], 1)
+                ready_socks, _, _ = select.select([tcp_socket], [], [], TIMEOUT)
                 if ready_socks:
                     data = tcp_socket.recv(BUFFER_SIZE)
                     if not data:
@@ -81,15 +74,15 @@ def handle_tcp_connection(server_ip, tcp_port, file_size, tr_num,stats):
                     break  # No more data within timeout
 
             duration = time.time() - start_time
-            speed = received_data*8 / duration if duration > 0 else 0  # Prevent division by zero
-            print(f"{Colors.OKCYAN}[TCP] TCP transfer #{tr_num} completed: {received_data} bytes in {duration:.2f} seconds, speed: {speed:.2f} bytes/second")
-            stats.append((tcp_socket, duration, speed))
+            received_data *= 8  # Turning bytes int bits
+            speed = received_data / duration if duration > 0 else 0  # Prevent division by zero
+            print(f"{Colors.OKCYAN}[TCP] TCP transfer #{tr_num} completed: {received_data} bits in {duration:.2f} seconds, speed: {speed:.2f} bits/second")
 
     except Exception as e:
         print(f"{Colors.FAIL}[TCP] TCP connection error: {e}")
 
 # Handle UDP Connection
-def handle_udp_connection(server_ip, udp_port, file_size, tr_num,stats):
+def handle_udp_connection(server_ip, udp_port, file_size, tr_num):
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
             udp_socket.settimeout(TIMEOUT)
@@ -125,32 +118,29 @@ def handle_udp_connection(server_ip, udp_port, file_size, tr_num,stats):
 
             duration = time.time() - start_time
             speed = file_size / duration if duration > 0 else 0  # Prevent division by zero
-            success_rate = (len(received_segments) / total_segments) * 100 if total_segments else 0
-            print(f"{Colors.YELLOW}[UDP] UDP transfer #{tr_num} completed: {len(received_segments)}/{total_segments} segments in {duration:.2f} seconds, speed: {speed:.2f} bytes/second, success rate: {success_rate:.2f}%")
-            stats.append((tr_num, duration, speed, success_rate))
+            success_rate = (len(received_segments) / total_segments) * 100 if total_segments else 0 # Prevent division by zero
+            print(f"{Colors.YELLOW}[UDP] UDP transfer #{tr_num} completed: {len(received_segments)}/{total_segments} segments in {duration:.2f} seconds, speed: {speed:.2f} bits/second, success rate: {success_rate:.2f}%")
 
     except Exception as e:
         print(f"{Colors.FAIL}[UDP] UDP connection error: {e}")
 
 # Main Function
 def start_client():
-    print(f"{Colors.OKGREEN}[Client] Client started, listening for offer requests...")
+    print(f"{Colors.OKGREEN}[Client] Client started{Colors.ENDC}")
     try:
         while True:
             server_ip, udp_port, tcp_port = listen_for_offers()
-            file_size = int(input(f"{Colors.OKGREEN}[Client] Enter file size (bytes): "))
-            num_tcp = int(input(f"{Colors.OKGREEN}[Client] Enter number of TCP connections: "))
-            num_udp = int(input(f"{Colors.OKGREEN}[Client] Enter number of UDP connections: "))
-
-            tcp_stats, udp_stats, tcp_threads, udp_threads = [], [], [], []
+            file_size = int(input(f"{Colors.OKGREEN}[Client] Enter file size (bits): {Colors.ENDC}"))
+            num_tcp = int(input(f"{Colors.OKGREEN}[Client] Enter number of TCP connections: {Colors.ENDC}"))
+            num_udp = int(input(f"{Colors.OKGREEN}[Client] Enter number of UDP connections: {Colors.ENDC}"))
 
             tcp_threads = [
-                threading.Thread(target=handle_tcp_connection, args=(server_ip, tcp_port, file_size, _+1,tcp_stats))
+                threading.Thread(target=handle_tcp_connection, args=(server_ip, tcp_port, file_size, _+1))
                 for _ in range(num_tcp)
             ]
 
             udp_threads = [
-                threading.Thread(target=handle_udp_connection, args=(server_ip, udp_port, file_size, _+1,udp_stats))
+                threading.Thread(target=handle_udp_connection, args=(server_ip, udp_port, file_size, _+1))
                 for _ in range(num_udp)
             ]
 
@@ -159,18 +149,10 @@ def start_client():
             for thread in tcp_threads + udp_threads:
                 thread.join()
 
-            # for conn_id, duration, speed in tcp_stats:
-            #     print(
-            #         f"{Colors.OKCYAN}[TCP] TCP transfer #{conn_id} finished, total time: {duration:.2f} seconds, speed: {speed:.2f} bps{Colors.ENDC}")
-            #
-            # for conn_id, duration, speed, success_rate in udp_stats:
-            #     status_color = Colors.OKGREEN if success_rate >= 95 else Colors.WARNING if success_rate >= 85 else Colors.FAIL
-            #     print(f"{Colors.YELLOW}[UDP] UDP transfer #{conn_id} finished, total time: {duration:.2f} seconds, speed: {speed:.2f} bps, success rate: {success_rate:.2f}%{Colors.ENDC}")
-
             print(f"{Colors.BOLD}{Colors.HEADER}[Client] All transfers complete yipeee!! {Colors.ENDC}\n")
 
     except KeyboardInterrupt:
-        print(f"\n\n{Colors.BOLD}{Colors.FAIL}[Client] Client interrupted. Shutting down gracefully...{Colors.ENDC}")
+        print(f"\n\n{Colors.BOLD}{Colors.FAIL}[Client] Client interrupted. Shutting down...{Colors.ENDC}")
     except Exception as e:
         print(f"{Colors.BOLD}{Colors.FAIL}[Client] Unexpected error: {e}{Colors.ENDC}")
 
