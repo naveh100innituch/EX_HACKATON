@@ -41,6 +41,9 @@ This project implements a client-server application to compare download speeds o
 3. Buffer Size: 1024 bytes 
 4. Broadcast Interval: 1 second 
 5. Payload Size: 4 KB
+6. OFFER_MSG_TYPE: 2 
+7. REQUEST_MSG_TYPE: 3 
+8. PAYLOAD_MSG_TYPE: 4
 
 ### Notes
 1. Client and server must be on the same network. 
