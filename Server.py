@@ -45,7 +45,7 @@ def create_udp_socket():
         returns:
             UDP socket
     """
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     if platform.system() != "Windows":
         try:
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
@@ -66,8 +66,9 @@ def broadcast_offers():
             offer_message = struct.pack(
                 '!IbHH', MAGIC_COOKIE, OFFER_MSG_TYPE, UDP_PORT, TCP_PORT
             )
+            BROADCAST_IP=ip_address[:-3]+"255"
             while True:
-                udp_socket.sendto(offer_message, ('<broadcast>', UDP_PORT))
+                udp_socket.sendto(offer_message, (BROADCAST_IP, UDP_PORT))
                 time.sleep(BROADCAST_INTERVAL)
     except Exception as e:
         print(f"{Colors.FAIL}[Broadcast] Error in UDP broadcast: {e}{Colors.ENDC}")
