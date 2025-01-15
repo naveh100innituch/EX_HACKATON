@@ -39,7 +39,12 @@ total_tcp_connections = 0
 total_data_transferred = 0
 
 def create_udp_socket():
-    """Create a UDP socket with cross-platform support."""
+    """
+        Create a UDP socket with cross-platform support.
+
+        returns:
+            UDP socket
+    """
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     if platform.system() != "Windows":
         try:
@@ -50,6 +55,9 @@ def create_udp_socket():
     return sock
 
 def broadcast_offers():
+    """
+        Sends periodic UDP broadcast messages to advertise the server's availability.
+    """
     time.sleep(1)   # making sure TCP and UDP sockets are set before any broadcast
     try:
         with create_udp_socket() as udp_socket:
@@ -66,6 +74,13 @@ def broadcast_offers():
 
 
 def handle_tcp_connection(client_socket, address):
+    """
+        Handles a client's TCP request for data transfer.
+
+        Args:
+            client_socket (socket.socket): The client's TCP socket connection.
+            address (tuple): The address of the connected client (IP, port).
+    """
     global total_tcp_connections, total_data_transferred
     try:
         file_size_data = client_socket.recv(BUFFER_SIZE)
@@ -88,6 +103,9 @@ def handle_tcp_connection(client_socket, address):
 
 
 def handle_udp_connection():
+    """
+        Handles a client's UDP request for data transfer.
+    """
     try:
         with create_udp_socket() as udp_sock:
             udp_sock.bind(('', UDP_PORT))
@@ -125,6 +143,9 @@ def handle_udp_connection():
 
 
 def start_tcp_server():
+    '''
+        Starting TCP server on TCP port.
+    '''
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp_socket:
             tcp_socket.bind(("", TCP_PORT))
@@ -142,6 +163,9 @@ def start_tcp_server():
 
 
 def start_server():
+    '''
+        Activates Server's functions
+    '''
     global total_tcp_connections, total_data_transferred
     try:
         server_running.set()

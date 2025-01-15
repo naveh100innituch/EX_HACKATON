@@ -32,6 +32,9 @@ TIMEOUT = 1
 
 
 def listen_for_offers():
+    """
+       Listens for server offers broadcast over UDP.
+    """
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
         if os.name == 'nt':
             udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -55,6 +58,9 @@ def listen_for_offers():
 
 # Handle TCP Connection
 def handle_tcp_connection(server_ip, tcp_port, file_size, tr_num):
+    '''
+        Handles Client's TCP connections.
+    '''
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp_socket:
             tcp_socket.connect((server_ip, tcp_port))
@@ -81,8 +87,10 @@ def handle_tcp_connection(server_ip, tcp_port, file_size, tr_num):
     except Exception as e:
         print(f"{Colors.FAIL}[TCP] TCP connection error: {e}")
 
-# Handle UDP Connection
 def handle_udp_connection(server_ip, udp_port, file_size, tr_num):
+    '''
+            Handles Client's UDP connections.
+    '''
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
             udp_socket.settimeout(TIMEOUT)
@@ -126,6 +134,9 @@ def handle_udp_connection(server_ip, udp_port, file_size, tr_num):
 
 # Main Function
 def start_client():
+    '''
+        Activates Client's functions
+    '''
     print(f"{Colors.OKGREEN}[Client] Client started{Colors.ENDC}")
     try:
         while True:
