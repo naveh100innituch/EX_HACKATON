@@ -126,7 +126,7 @@ def handle_udp_connection(server_ip, udp_port, file_size, tr_num):
 
             duration = time.time() - start_time
             speed = file_size / duration if duration > 0 else 0  # Prevent division by zero
-            success_rate = (len(received_segments) / total_segments) * 100 if total_segments else 0 # Prevent division by zero
+            success_rate = (len(received_segments)*8 / total_segments) * 100 if total_segments else 0 # Prevent division by zero
             print(f"{Colors.YELLOW}[UDP] UDP transfer #{tr_num} completed: {len(received_segments)}/{total_segments} segments in {duration:.2f} seconds, speed: {speed:.2f} bits/second, success rate: {success_rate:.2f}%")
 
     except Exception as e:
@@ -141,7 +141,7 @@ def start_client():
     try:
         while True:
             server_ip, udp_port, tcp_port = listen_for_offers()
-            file_size = int(input(f"{Colors.OKGREEN}[Client] Enter file size (bits): {Colors.ENDC}"))
+            file_size = int(input(f"{Colors.OKGREEN}[Client] Enter file size (bytes): {Colors.ENDC}"))
             num_tcp = int(input(f"{Colors.OKGREEN}[Client] Enter number of TCP connections: {Colors.ENDC}"))
             num_udp = int(input(f"{Colors.OKGREEN}[Client] Enter number of UDP connections: {Colors.ENDC}"))
 
